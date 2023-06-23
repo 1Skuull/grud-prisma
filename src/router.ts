@@ -1,64 +1,15 @@
-import { Request, Response, Router } from "express"
-import { prisma } from "./prisma"
+import { Router } from "express"
+import userController from "./controllers/userController"
 
 const router = Router()
 
-router.get("/users", async (request:Request, response:Response) => {
-    const users = await prisma.user.findMany()
-    
-    return response.status(200).json(users)
-})
+router.get("/users", userController.GetUser)
 
-router.post("/users", async (request:Request, response:Response) => {
-    const { name, email }= request.body
+router.post("/users", userController.CreateUser)
 
-    const users = await prisma.user.findUnique({ where: { email } })
-    
-    if(!email){
-        return response.status(401).json({ error: "Email é obrigatorio" })
-    }
-    
-    if(users){
-        return response.status(401).json({ error: "Email ja foi cadastrado" })
-    }
+router.put("/users/:id", userController.UpdateUser)
 
-    await prisma.user.create({ data: { name, email } })
-
-    return response.status(200).json({ message: "Usuarios adicionado com sucesso" })
-})
-
-router.put("/users/:id", async (request:Request, response:Response) => {
-    const { id } = request.params
-    const { name }= request.body
-    
-    let user = await prisma.user.findUnique({ where: { id: Number(id) } })
-
-    if(user?.name === name){
-        return response.status(401).json({ error: "Usuario já possui esse nome" })
-    }
-
-    user = await prisma.user.update({
-        where: { id: Number(id) },
-        data: { name }
-    })
-
-    return response.status(200).json({ message: "Usuarios alterado com sucesso" })
-})
-
-
-router.delete("/users/:id", async (request:Request, response:Response) => {
-    const { id } = request.params
-    
-    let user = await prisma.user.findUnique({ where: { id: Number(id) } })
-
-    if(!user){
-        return response.status(401).json({ error: "Usuario não existe" })
-    }
-
-    user = await prisma.user.delete({ where: { id: Number(id) }})
-    
-    return response.status(200).json({ message: "Usuarios deletado com sucesso" })
-})
+router.delete("/users/:id", userController.DeleteUser)
 
 
 export default router
