@@ -2,9 +2,9 @@
   "name": "grud-prisma",
   "version": "1.0.0",
   "description": "",
-  "main": "index.ts",
+  "main": "index.js",
   "scripts": {
-    "dev": "ts-node-dev --quiet --clear index.ts"
+    "dev": "ts-node-dev --quiet --clear ./src/server.ts"
   },
   "keywords": [],
   "author": "",

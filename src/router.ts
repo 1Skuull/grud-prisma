@@ -1,29 +1,25 @@
-import Express from 'express'
-import { PrismaClient, User } from '@prisma/client'
-import cors from "cors"
+import { Request, Response, Router } from "express"
+import { prisma } from "./prisma"
 
-const prisma = new PrismaClient()
-const app = Express()
-app.use(Express.json())
-app.use(cors())
+const router = Router()
 
-app.get("/users", async (request, response) => {
+router.get("/users", async (request:Request, response:Response) => {
     const users = await prisma.user.findMany()
     
     return response.status(200).json(users)
 })
 
-app.post("/users", async (request, response) => {
+router.post("/users", async (request:Request, response:Response) => {
     const { name, email }= request.body
 
     const users = await prisma.user.findUnique({ where: { email } })
     
     if(!email){
-        return response.json({ error: "Email é obrigatorio" })
+        return response.status(401).json({ error: "Email é obrigatorio" })
     }
     
     if(users){
-        return response.json({ error: "Email ja foi cadastrado" })
+        return response.status(401).json({ error: "Email ja foi cadastrado" })
     }
 
     await prisma.user.create({ data: { name, email } })
@@ -31,14 +27,14 @@ app.post("/users", async (request, response) => {
     return response.status(200).json({ message: "Usuarios adicionado com sucesso" })
 })
 
-app.put("/users/:id", async (request, response) => {
+router.put("/users/:id", async (request:Request, response:Response) => {
     const { id } = request.params
     const { name }= request.body
     
     let user = await prisma.user.findUnique({ where: { id: Number(id) } })
 
     if(user?.name === name){
-        return response.json({ error: "Usuario já possui esse nome" })
+        return response.status(401).json({ error: "Usuario já possui esse nome" })
     }
 
     user = await prisma.user.update({
@@ -50,13 +46,13 @@ app.put("/users/:id", async (request, response) => {
 })
 
 
-app.delete("/users/:id", async (request, response) => {
+router.delete("/users/:id", async (request:Request, response:Response) => {
     const { id } = request.params
     
     let user = await prisma.user.findUnique({ where: { id: Number(id) } })
 
     if(!user){
-        return response.json({ error: "Usuario não existe" })
+        return response.status(401).json({ error: "Usuario não existe" })
     }
 
     user = await prisma.user.delete({ where: { id: Number(id) }})
@@ -65,4 +61,4 @@ app.delete("/users/:id", async (request, response) => {
 })
 
 
-app.listen(9191, () => { console.log("Servidor iniciado") })
+export default router
